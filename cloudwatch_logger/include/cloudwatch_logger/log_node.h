@@ -49,9 +49,11 @@ public:
    * @param log_stream log stream name
    * @param config aws client configuration object
    * @param sdk_options aws sdk options
+   * @param log_manager_factory optional log manager factory.
    */
   void Initialize(const std::string & log_group, const std::string & log_stream,
-                  Aws::Client::ClientConfiguration & config, Aws::SDKOptions & sdk_options);
+                  const Aws::Client::ClientConfiguration & config, Aws::SDKOptions & sdk_options, 
+                  const std::shared_ptr<LogManagerFactory> & log_manager_factory = std::make_shared<LogManagerFactory>()); 
 
   /**
    * @brief Emits RecordLog using the log manager
