@@ -25,13 +25,11 @@ catkin_package()
 ###########
 
 ## Declare a C++ executable
-# set(CLOUDWATCH_LOGGER_SRC src/log_client.cpp src/log_node.cpp)
-# FIXME param helper and main like in https://github.com/aws-robotics/lex-ros1/blob/master/lex_node/CMakeLists.txt
 add_library(${PROJECT_NAME}_lib STATIC src/log_node.cpp)
 target_include_directories(${PROJECT_NAME}_lib PUBLIC include ${catkin_INCLUDE_DIRS} ${cloudwatch_logs_common_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${cloudwatch_logs_common_LIBRARIES})
 
-add_executable(${PROJECT_NAME} src/log_client.cpp) # FIXME param helper etc 
+add_executable(${PROJECT_NAME} src/log_client.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE include ${catkin_INCLUDE_DIRS} ${cloudwatch_logs_common_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_lib ${cloudwatch_logs_common_LIBRARIES})
 
@@ -56,17 +54,9 @@ if(CATKIN_ENABLE_TESTING)
   include_directories(/usr/include/gmock /usr/src/gmock)
   add_library(libgmock /usr/src/gmock/src/gmock-all.cc)
 
-  # # FIXME add library 
   add_executable(test_log_node test/log_node_test.cpp src/log_node.cpp)
   target_include_directories(test_log_node PRIVATE include ${catkin_INCLUDE_DIRS}
     ${cloudwatch_logger_INCLUDE_DIRS})
   target_link_libraries(test_log_node ${PROJECT_NAME}_lib ${GTEST_LIBRARIES} libgmock ${catkin_LIBRARIES})
   add_test(NAME test_log_node COMMAND test_log_node --gtest_output=xml:test_results/)
-
-  # add_rostest_gtest(test_cloudwatch_logger
-  #   test/test_cloudwatch_logger.test
-  #   test/cloudwatch_logger_test.cpp)
-  # target_include_directories(test_cloudwatch_logger PRIVATE include ${catkin_INCLUDE_DIRS}
-  #   ${cloudwatch_logger_INCLUDE_DIRS})
-  # target_link_libraries(test_cloudwatch_logger ${PROJECT_NAME}_lib libgmock ${catkin_LIBRARIES})
 endif()
