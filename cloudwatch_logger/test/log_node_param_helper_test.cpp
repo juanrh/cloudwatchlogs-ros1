@@ -144,6 +144,113 @@ TEST_F(LogNodeParamHelperFixture, TestReadLogStream)
     EXPECT_STREQ(expected_param_value.c_str(), param.c_str());
 }
 
+TEST_F(LogNodeParamHelperFixture, TestReadSubscribeToRosout)
+{
+    bool expected_param_value = ! kNodeSubscribeToRosoutDefaultValue;
+
+    {
+      InSequence read_param_seq;
+
+      EXPECT_CALL(*param_reader_, ReadBool(StrEq(kNodeParamSubscribeToRosoutKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_FAILURE)); 
+
+      EXPECT_CALL(*param_reader_, ReadBool(StrEq(kNodeParamSubscribeToRosoutKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_NOT_FOUND)); 
+
+      EXPECT_CALL(*param_reader_, ReadBool(StrEq(kNodeParamSubscribeToRosoutKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>(expected_param_value), Return(AwsError::AWS_ERR_OK))
+        );
+    }
+
+    bool param = ! kNodeSubscribeToRosoutDefaultValue;
+    EXPECT_EQ(AwsError::AWS_ERR_FAILURE, ReadSubscribeToRosout(param_reader_, param));
+    EXPECT_EQ(kNodeSubscribeToRosoutDefaultValue, param);
+
+    param = ! kNodeSubscribeToRosoutDefaultValue;; 
+    EXPECT_EQ(AwsError::AWS_ERR_NOT_FOUND, ReadSubscribeToRosout(param_reader_, param));
+    EXPECT_EQ(kNodeSubscribeToRosoutDefaultValue, param);
+    
+    param = ! kNodeSubscribeToRosoutDefaultValue; 
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadSubscribeToRosout(param_reader_, param));
+    EXPECT_EQ(expected_param_value, param);
+}
+
+TEST_F(LogNodeParamHelperFixture, TestReadReadMinLogVerbosity)
+{
+    {
+      InSequence read_param_seq;
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_FAILURE)); 
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_NOT_FOUND)); 
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>("DEBUG"), Return(AwsError::AWS_ERR_OK))
+        );
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>("INFO"), Return(AwsError::AWS_ERR_OK))
+        );
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>("WARN"), Return(AwsError::AWS_ERR_OK))
+        );
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>("ERROR"), Return(AwsError::AWS_ERR_OK))
+        );
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>("FATAL"), Return(AwsError::AWS_ERR_OK))
+        );
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamMinLogVerbosityKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>("xNDlhZmJmNGM"), Return(AwsError::AWS_ERR_OK))
+        );      
+    }
+
+    int8_t param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_FAILURE, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(kNodeMinLogVerbosityDefaultValue, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_NOT_FOUND, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(kNodeMinLogVerbosityDefaultValue, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(rosgraph_msgs::Log::DEBUG, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(rosgraph_msgs::Log::INFO, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(rosgraph_msgs::Log::WARN, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(rosgraph_msgs::Log::ERROR, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(rosgraph_msgs::Log::FATAL, param);
+
+    param = rosgraph_msgs::Log::FATAL + 1 ;
+    EXPECT_EQ(AwsError::AWS_ERR_PARAM, ReadMinLogVerbosity(param_reader_, param));
+    EXPECT_EQ(kNodeMinLogVerbosityDefaultValue, param);
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

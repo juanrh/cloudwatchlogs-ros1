@@ -102,15 +102,26 @@ Aws::AwsError ReadSubscribeToRosout(
 {
   Aws::AwsError ret =
     parameter_reader->ReadBool(kNodeParamSubscribeToRosoutKey, subscribe_to_rosout);
-  if (ret == Aws::AWS_ERR_NOT_FOUND) {
-    subscribe_to_rosout = kNodeSubscribeToRosoutDefaultValue;
-    AWS_LOGSTREAM_WARN(
+  switch (ret)
+  {
+    case AwsError::AWS_ERR_NOT_FOUND:
+      subscribe_to_rosout = kNodeSubscribeToRosoutDefaultValue;
+      AWS_LOGSTREAM_WARN(
       __func__,
       "Whether to subscribe to rosout_agg topic configuration not found, setting to default value: "
         << kNodeSubscribeToRosoutDefaultValue);
-  } else {
-    AWS_LOGSTREAM_INFO(
+      break;
+    case AwsError::AWS_ERR_OK:
+      AWS_LOGSTREAM_INFO(
       __func__, "Whether to subscribe to rosout_agg topic is set to: " << subscribe_to_rosout);
+      break;
+    default:
+      subscribe_to_rosout = kNodeSubscribeToRosoutDefaultValue;
+      AWS_LOGSTREAM_ERROR(
+        __func__,
+        "Error " << ret 
+        << "retrieving parameter for Whether to subscribe to rosout_agg topic configuration " 
+        << ", setting to default value: " << kNodeSubscribeToRosoutDefaultValue);
   }
   return ret;
 }
@@ -124,32 +135,40 @@ Aws::AwsError ReadMinLogVerbosity(
   std::string specified_verbosity;
   Aws::AwsError ret =
     parameter_reader->ReadStdString(kNodeParamMinLogVerbosityKey, specified_verbosity);
-  if (ret == Aws::AWS_ERR_NOT_FOUND) {
-    AWS_LOGSTREAM_WARN(__func__, "Log verbosity configuration not found, setting to default value: "
+  switch (ret)
+  {
+    case AwsError::AWS_ERR_NOT_FOUND:
+      AWS_LOGSTREAM_WARN(__func__, "Log verbosity configuration not found, setting to default value: "
                                    << kNodeMinLogVerbosityDefaultValue);
-  } else {
-    if ("DEBUG" == specified_verbosity) {
-      min_log_verbosity = rosgraph_msgs::Log::DEBUG;
-      AWS_LOG_INFO(__func__, "Log verbosity is set to DEBUG.");
-    } else if ("INFO" == specified_verbosity) {
-      min_log_verbosity = rosgraph_msgs::Log::INFO;
-      AWS_LOG_INFO(__func__, "Log verbosity is set to INFO.");
-    } else if ("WARN" == specified_verbosity) {
-      min_log_verbosity = rosgraph_msgs::Log::WARN;
-      AWS_LOG_INFO(__func__, "Log verbosity is set to WARN.");
-    } else if ("ERROR" == specified_verbosity) {
-      min_log_verbosity = rosgraph_msgs::Log::ERROR;
-      AWS_LOG_INFO(__func__, "Log verbosity is set to ERROR.");
-    } else if ("FATAL" == specified_verbosity) {
-      min_log_verbosity = rosgraph_msgs::Log::FATAL;
-      AWS_LOG_INFO(__func__, "Log verbosity is set to FATAL.");
-    } else {
-      AWS_LOGSTREAM_WARN(__func__,
-                         "Log verbosity configuration not valid, setting to default value: "
+      break;
+    case AwsError::AWS_ERR_OK:
+      if ("DEBUG" == specified_verbosity) {
+        min_log_verbosity = rosgraph_msgs::Log::DEBUG;
+        AWS_LOG_INFO(__func__, "Log verbosity is set to DEBUG.");
+      } else if ("INFO" == specified_verbosity) {
+        min_log_verbosity = rosgraph_msgs::Log::INFO;
+        AWS_LOG_INFO(__func__, "Log verbosity is set to INFO.");
+      } else if ("WARN" == specified_verbosity) {
+        min_log_verbosity = rosgraph_msgs::Log::WARN;
+        AWS_LOG_INFO(__func__, "Log verbosity is set to WARN.");
+      } else if ("ERROR" == specified_verbosity) {
+        min_log_verbosity = rosgraph_msgs::Log::ERROR;
+        AWS_LOG_INFO(__func__, "Log verbosity is set to ERROR.");
+      } else if ("FATAL" == specified_verbosity) {
+        min_log_verbosity = rosgraph_msgs::Log::FATAL;
+        AWS_LOG_INFO(__func__, "Log verbosity is set to FATAL.");
+      } else {
+        ret = AwsError::AWS_ERR_PARAM;
+        AWS_LOGSTREAM_WARN(__func__,
+                          "Log verbosity configuration not valid, setting to default value: "
                            << kNodeMinLogVerbosityDefaultValue);
-    }
+      }
+      break;
+    default:
+      AWS_LOGSTREAM_ERROR(__func__, 
+        "Error " << ret << " retrieving log verbosity configuration, setting to default value: "
+        << kNodeMinLogVerbosityDefaultValue);
   }
-
   return ret;
 }
 
