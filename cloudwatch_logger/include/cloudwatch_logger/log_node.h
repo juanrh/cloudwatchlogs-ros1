@@ -13,6 +13,8 @@
  * permissions and limitations under the License.
  */
 
+#pragma once
+
 #include <aws_common/sdk_utils/client_configuration_provider.h>
 #include <aws_ros1_common/sdk_utils/logging/aws_ros_logger.h>
 #include <aws_ros1_common/sdk_utils/ros1_node_parameter_reader.h>

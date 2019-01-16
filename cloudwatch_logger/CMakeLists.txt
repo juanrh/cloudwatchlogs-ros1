@@ -25,11 +25,11 @@ catkin_package()
 ###########
 
 ## Declare a C++ executable
-add_library(${PROJECT_NAME}_lib STATIC src/log_node.cpp)
+add_library(${PROJECT_NAME}_lib STATIC src/log_node.cpp src/log_node_param_helper.cpp)
 target_include_directories(${PROJECT_NAME}_lib PUBLIC include ${catkin_INCLUDE_DIRS} ${cloudwatch_logs_common_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${cloudwatch_logs_common_LIBRARIES})
 
-add_executable(${PROJECT_NAME} src/log_client.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE include ${catkin_INCLUDE_DIRS} ${cloudwatch_logs_common_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_lib ${cloudwatch_logs_common_LIBRARIES})
 
@@ -59,4 +59,11 @@ if(CATKIN_ENABLE_TESTING)
     ${cloudwatch_logger_INCLUDE_DIRS})
   target_link_libraries(test_log_node ${PROJECT_NAME}_lib ${GTEST_LIBRARIES} libgmock ${catkin_LIBRARIES})
   add_test(NAME test_log_node COMMAND test_log_node --gtest_output=xml:test_results/)
+
+  add_rostest_gtest(test_cloudwatch_logger
+    test/test_cloudwatch_logger.test
+    test/cloudwatch_logger_test.cpp)
+  target_include_directories(test_cloudwatch_logger PRIVATE include ${catkin_INCLUDE_DIRS}
+    ${cloudwatch_logger_INCLUDE_DIRS})
+  target_link_libraries(test_cloudwatch_logger ${PROJECT_NAME}_lib libgmock ${catkin_LIBRARIES})
 endif()
