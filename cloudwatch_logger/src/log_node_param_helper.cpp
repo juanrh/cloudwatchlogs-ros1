@@ -38,7 +38,6 @@ Aws::AwsError ReadPublishFrequency(
     case AwsError::AWS_ERR_OK:
       AWS_LOGSTREAM_INFO(__func__, "Publish frequency is set to: " << publish_frequency);
       break;
-
     default:
       publish_frequency = kNodePublishFrequencyDefaultValue;
       AWS_LOGSTREAM_ERROR(__func__,
@@ -53,13 +52,22 @@ Aws::AwsError ReadLogGroup(std::shared_ptr<Aws::Client::ParameterReaderInterface
                            std::string & log_group)
 {
   Aws::AwsError ret = parameter_reader->ReadStdString(kNodeParamLogGroupNameKey, log_group);
-  if (ret == Aws::AWS_ERR_NOT_FOUND) {
-    log_group = kNodeLogGroupNameDefaultValue;
-    AWS_LOGSTREAM_WARN(__func__,
+  switch (ret)
+  {
+    case AwsError::AWS_ERR_NOT_FOUND:
+      log_group = kNodeLogGroupNameDefaultValue;
+      AWS_LOGSTREAM_WARN(__func__,
                        "Log group name configuration not found, setting to default value: "
                          << kNodeLogGroupNameDefaultValue);
-  } else {
-    AWS_LOGSTREAM_INFO(__func__, "Log group name is set to: " << log_group);
+      break;
+    case AwsError::AWS_ERR_OK:
+      AWS_LOGSTREAM_INFO(__func__, "Log group name is set to: " << log_group);
+      break;
+    default:
+      log_group = kNodeLogGroupNameDefaultValue;
+      AWS_LOGSTREAM_ERROR(__func__,
+                         "Error " << ret << "retrieving log group name configuration, setting to default value: "
+                         << kNodeLogGroupNameDefaultValue);
   }
   return ret;
 }
@@ -68,13 +76,22 @@ Aws::AwsError ReadLogStream(std::shared_ptr<Aws::Client::ParameterReaderInterfac
                             std::string & log_stream)
 {
   Aws::AwsError ret = parameter_reader->ReadStdString(kNodeParamLogStreamNameKey, log_stream);
-  if (ret == Aws::AWS_ERR_NOT_FOUND) {
-    log_stream = kNodeLogStreamNameDefaultValue;
-    AWS_LOGSTREAM_WARN(__func__,
-                       "Log stream name configuration not found, setting to default value: "
+  switch (ret)
+  {
+    case AwsError::AWS_ERR_NOT_FOUND:
+      log_stream = kNodeLogStreamNameDefaultValue;
+      AWS_LOGSTREAM_WARN(__func__,
+                         "Log stream name configuration not found, setting to default value: "
                          << kNodeLogStreamNameDefaultValue);
-  } else {
-    AWS_LOGSTREAM_INFO(__func__, "Log stream name is set to: " << log_stream);
+      break;
+    case AwsError::AWS_ERR_OK:
+      AWS_LOGSTREAM_INFO(__func__, "Log stream name is set to: " << log_stream);
+      break;
+    default:
+      log_stream = kNodeLogStreamNameDefaultValue;
+      AWS_LOGSTREAM_ERROR(__func__,
+                         "Error " << ret << "retrieving log stream name configuration, setting to default value: "
+                         << kNodeLogStreamNameDefaultValue);
   }
   return ret;
 }

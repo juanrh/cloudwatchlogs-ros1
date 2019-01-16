@@ -80,7 +80,69 @@ TEST_F(LogNodeParamHelperFixture, TestReadPublishFrequency)
     EXPECT_EQ(expected_param_value, param);
 }
 
-// FIXME deberia no decir ok cuando ha habido error 
+TEST_F(LogNodeParamHelperFixture, TestReadLogGroup)
+{
+    std::string expected_param_value = "MTc4MGNjOTc3ZTA1OTY";
+
+    {
+      InSequence read_param_seq;
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamLogGroupNameKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_FAILURE)); 
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamLogGroupNameKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_NOT_FOUND)); 
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamLogGroupNameKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>(expected_param_value), Return(AwsError::AWS_ERR_OK))
+        );
+    }
+
+    std::string param = ""; 
+    EXPECT_EQ(AwsError::AWS_ERR_FAILURE, ReadLogGroup(param_reader_, param));
+    EXPECT_STREQ(kNodeLogGroupNameDefaultValue, param.c_str());
+
+    param = ""; 
+    EXPECT_EQ(AwsError::AWS_ERR_NOT_FOUND, ReadLogGroup(param_reader_, param));
+    EXPECT_STREQ(kNodeLogGroupNameDefaultValue, param.c_str());
+    
+    param = ""; 
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadLogGroup(param_reader_, param));
+    EXPECT_STREQ(expected_param_value.c_str(), param.c_str());
+}
+
+TEST_F(LogNodeParamHelperFixture, TestReadLogStream)
+{
+    std::string expected_param_value = "MGQyNTU3N2I3NzU1ZGIyNWQzMTZhYmVh";
+
+    {
+      InSequence read_param_seq;
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamLogStreamNameKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_FAILURE)); 
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamLogStreamNameKey), _))
+        .WillOnce(Return(AwsError::AWS_ERR_NOT_FOUND)); 
+
+      EXPECT_CALL(*param_reader_, ReadStdString(StrEq(kNodeParamLogStreamNameKey), _))
+        .WillOnce(
+          DoAll(SetArgReferee<1>(expected_param_value), Return(AwsError::AWS_ERR_OK))
+        );
+    }
+
+    std::string param = ""; 
+    EXPECT_EQ(AwsError::AWS_ERR_FAILURE, ReadLogStream(param_reader_, param));
+    EXPECT_STREQ(kNodeLogStreamNameDefaultValue, param.c_str());
+
+    param = ""; 
+    EXPECT_EQ(AwsError::AWS_ERR_NOT_FOUND, ReadLogStream(param_reader_, param));
+    EXPECT_STREQ(kNodeLogStreamNameDefaultValue, param.c_str());
+    
+    param = ""; 
+    EXPECT_EQ(AwsError::AWS_ERR_OK, ReadLogStream(param_reader_, param));
+    EXPECT_STREQ(expected_param_value.c_str(), param.c_str());
+}
 
 int main(int argc, char ** argv)
 {
