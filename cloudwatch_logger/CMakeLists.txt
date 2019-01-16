@@ -54,16 +54,16 @@ if(CATKIN_ENABLE_TESTING)
   include_directories(/usr/include/gmock /usr/src/gmock)
   add_library(libgmock /usr/src/gmock/src/gmock-all.cc)
 
-  add_executable(test_log_node test/log_node_test.cpp src/log_node.cpp)
+  add_executable(test_log_node test/log_node_test.cpp)
   target_include_directories(test_log_node PRIVATE include ${catkin_INCLUDE_DIRS}
     ${cloudwatch_logger_INCLUDE_DIRS})
   target_link_libraries(test_log_node ${PROJECT_NAME}_lib ${GTEST_LIBRARIES} libgmock ${catkin_LIBRARIES})
   add_test(NAME test_log_node COMMAND test_log_node --gtest_output=xml:test_results/)
 
-  add_rostest_gtest(test_cloudwatch_logger
-    test/test_cloudwatch_logger.test
-    test/cloudwatch_logger_test.cpp)
-  target_include_directories(test_cloudwatch_logger PRIVATE include ${catkin_INCLUDE_DIRS}
+  add_executable(test_log_node_param_helper test/log_node_param_helper_test.cpp)
+  target_include_directories(test_log_node_param_helper PRIVATE include ${catkin_INCLUDE_DIRS}
     ${cloudwatch_logger_INCLUDE_DIRS})
-  target_link_libraries(test_cloudwatch_logger ${PROJECT_NAME}_lib libgmock ${catkin_LIBRARIES})
+  target_link_libraries(test_log_node_param_helper ${PROJECT_NAME}_lib 
+    ${GTEST_LIBRARIES} libgmock ${catkin_LIBRARIES})
+  add_test(NAME test_log_node_param_helper COMMAND test_log_node_param_helper --gtest_output=xml:test_results/)
 endif()

@@ -16,39 +16,35 @@
 #include <cloudwatch_logger/log_node_param_helper.h>
 #include <aws/core/utils/logging/LogMacros.h>
 
+using Aws::AwsError;
+
 namespace Aws {
 namespace CloudWatchLogs {
 namespace Utils {
-
-constexpr int kNodeSubQueueSize = 100;
-constexpr char kNodeRosoutAggregatedTopicName[] = "rosout_agg";
-
-constexpr char kNodeParamLogStreamNameKey[] = "log_stream_name";
-constexpr char kNodeParamPublishFrequencyKey[] = "publish_frequency";
-constexpr char kNodeParamSubscribeToRosoutKey[] = "sub_to_rosout";
-constexpr char kNodeParamLogGroupNameKey[] = "log_group_name";
-constexpr char kNodeParamLogTopicsListKey[] = "topics";
-constexpr char kNodeParamMinLogVerbosityKey[] = "min_log_verbosity";
-
-constexpr char kNodeLogGroupNameDefaultValue[] = "ros_log_group";
-constexpr char kNodeLogStreamNameDefaultValue[] = "ros_log_stream";
-constexpr int8_t kNodeMinLogVerbosityDefaultValue = rosgraph_msgs::Log::DEBUG;
-constexpr double kNodePublishFrequencyDefaultValue = 5.0;
-constexpr bool kNodeSubscribeToRosoutDefaultValue = true;
 
 Aws::AwsError ReadPublishFrequency(
   std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader,
   double & publish_frequency)
 {
-  Aws::AwsError ret =
-    parameter_reader->ReadDouble(kNodeParamPublishFrequencyKey, publish_frequency);
-  if (ret == Aws::AWS_ERR_NOT_FOUND) {
-    publish_frequency = kNodePublishFrequencyDefaultValue;
-    AWS_LOGSTREAM_WARN(__func__,
-                       "Publish frequency configuration not found, setting to default value: "
+  AwsError ret = parameter_reader->ReadDouble(kNodeParamPublishFrequencyKey, publish_frequency);
+  switch (ret)
+  {
+    case AwsError::AWS_ERR_NOT_FOUND:
+      publish_frequency = kNodePublishFrequencyDefaultValue;
+      AWS_LOGSTREAM_WARN(__func__,
+                         "Publish frequency configuration not found, setting to default value: "
                          << kNodePublishFrequencyDefaultValue);
-  } else {
-    AWS_LOGSTREAM_INFO(__func__, "Publish frequency is set to: " << publish_frequency);
+      break;
+    case AwsError::AWS_ERR_OK:
+      AWS_LOGSTREAM_INFO(__func__, "Publish frequency is set to: " << publish_frequency);
+      break;
+
+    default:
+      publish_frequency = kNodePublishFrequencyDefaultValue;
+      AWS_LOGSTREAM_ERROR(__func__,
+                         "Error " << ret << " retrieving publish frequency, setting to default value: "
+                         << kNodePublishFrequencyDefaultValue);
+    
   }
   return ret;
 }

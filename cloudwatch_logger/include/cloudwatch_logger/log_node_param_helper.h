@@ -24,6 +24,22 @@ namespace Aws {
 namespace CloudWatchLogs {
 namespace Utils {
 
+constexpr int kNodeSubQueueSize = 100;
+constexpr char kNodeRosoutAggregatedTopicName[] = "rosout_agg";
+
+constexpr char kNodeParamLogStreamNameKey[] = "log_stream_name";
+constexpr char kNodeParamPublishFrequencyKey[] = "publish_frequency";
+constexpr char kNodeParamSubscribeToRosoutKey[] = "sub_to_rosout";
+constexpr char kNodeParamLogGroupNameKey[] = "log_group_name";
+constexpr char kNodeParamLogTopicsListKey[] = "topics";
+constexpr char kNodeParamMinLogVerbosityKey[] = "min_log_verbosity";
+
+constexpr char kNodeLogGroupNameDefaultValue[] = "ros_log_group";
+constexpr char kNodeLogStreamNameDefaultValue[] = "ros_log_stream";
+constexpr int8_t kNodeMinLogVerbosityDefaultValue = rosgraph_msgs::Log::DEBUG;
+constexpr double kNodePublishFrequencyDefaultValue = 5.0;
+constexpr bool kNodeSubscribeToRosoutDefaultValue = true;
+
 Aws::AwsError ReadPublishFrequency(
   std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader,
   double & publish_frequency);
