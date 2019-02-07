@@ -14,9 +14,10 @@
  */
 
 #include <cloudwatch_logger/log_node_param_helper.h>
+#include <aws_common/sdk_utils/parameter_reader.h>
 #include <aws/core/utils/logging/LogMacros.h>
 
-using Aws::AwsError;
+using namespace Aws::Client;
 
 namespace Aws {
 namespace CloudWatchLogs {
@@ -26,16 +27,17 @@ Aws::AwsError ReadPublishFrequency(
   std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader,
   double & publish_frequency)
 {
-  AwsError ret = parameter_reader->ReadDouble(kNodeParamPublishFrequencyKey, publish_frequency);
+  Aws::AwsError ret =
+    parameter_reader->ReadParam(ParameterPath(kNodeParamPublishFrequencyKey), publish_frequency);
   switch (ret)
   {
-    case AwsError::AWS_ERR_NOT_FOUND:
+    case Aws::AwsError::AWS_ERR_NOT_FOUND:
       publish_frequency = kNodePublishFrequencyDefaultValue;
       AWS_LOGSTREAM_WARN(__func__,
                          "Publish frequency configuration not found, setting to default value: "
                          << kNodePublishFrequencyDefaultValue);
       break;
-    case AwsError::AWS_ERR_OK:
+    case Aws::AwsError::AWS_ERR_OK:
       AWS_LOGSTREAM_INFO(__func__, "Publish frequency is set to: " << publish_frequency);
       break;
     default:
@@ -51,16 +53,16 @@ Aws::AwsError ReadPublishFrequency(
 Aws::AwsError ReadLogGroup(std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader,
                            std::string & log_group)
 {
-  Aws::AwsError ret = parameter_reader->ReadStdString(kNodeParamLogGroupNameKey, log_group);
+  Aws::AwsError ret = parameter_reader->ReadParam(ParameterPath(kNodeParamLogGroupNameKey), log_group);
   switch (ret)
   {
-    case AwsError::AWS_ERR_NOT_FOUND:
+    case Aws::AwsError::AWS_ERR_NOT_FOUND:
       log_group = kNodeLogGroupNameDefaultValue;
       AWS_LOGSTREAM_WARN(__func__,
                        "Log group name configuration not found, setting to default value: "
                          << kNodeLogGroupNameDefaultValue);
       break;
-    case AwsError::AWS_ERR_OK:
+    case Aws::AwsError::AWS_ERR_OK:
       AWS_LOGSTREAM_INFO(__func__, "Log group name is set to: " << log_group);
       break;
     default:
@@ -75,16 +77,16 @@ Aws::AwsError ReadLogGroup(std::shared_ptr<Aws::Client::ParameterReaderInterface
 Aws::AwsError ReadLogStream(std::shared_ptr<Aws::Client::ParameterReaderInterface> parameter_reader,
                             std::string & log_stream)
 {
-  Aws::AwsError ret = parameter_reader->ReadStdString(kNodeParamLogStreamNameKey, log_stream);
+  Aws::AwsError ret = parameter_reader->ReadParam(ParameterPath(kNodeParamLogStreamNameKey), log_stream);
   switch (ret)
   {
-    case AwsError::AWS_ERR_NOT_FOUND:
+    case Aws::AwsError::AWS_ERR_NOT_FOUND:
       log_stream = kNodeLogStreamNameDefaultValue;
       AWS_LOGSTREAM_WARN(__func__,
                          "Log stream name configuration not found, setting to default value: "
                          << kNodeLogStreamNameDefaultValue);
       break;
-    case AwsError::AWS_ERR_OK:
+    case Aws::AwsError::AWS_ERR_OK:
       AWS_LOGSTREAM_INFO(__func__, "Log stream name is set to: " << log_stream);
       break;
     default:
@@ -101,17 +103,17 @@ Aws::AwsError ReadSubscribeToRosout(
   bool & subscribe_to_rosout)
 {
   Aws::AwsError ret =
-    parameter_reader->ReadBool(kNodeParamSubscribeToRosoutKey, subscribe_to_rosout);
+    parameter_reader->ReadParam(ParameterPath(kNodeParamSubscribeToRosoutKey), subscribe_to_rosout);
   switch (ret)
   {
-    case AwsError::AWS_ERR_NOT_FOUND:
+    case Aws::AwsError::AWS_ERR_NOT_FOUND:
       subscribe_to_rosout = kNodeSubscribeToRosoutDefaultValue;
       AWS_LOGSTREAM_WARN(
       __func__,
       "Whether to subscribe to rosout_agg topic configuration not found, setting to default value: "
         << kNodeSubscribeToRosoutDefaultValue);
       break;
-    case AwsError::AWS_ERR_OK:
+    case Aws::AwsError::AWS_ERR_OK:
       AWS_LOGSTREAM_INFO(
       __func__, "Whether to subscribe to rosout_agg topic is set to: " << subscribe_to_rosout);
       break;
@@ -134,14 +136,14 @@ Aws::AwsError ReadMinLogVerbosity(
 
   std::string specified_verbosity;
   Aws::AwsError ret =
-    parameter_reader->ReadStdString(kNodeParamMinLogVerbosityKey, specified_verbosity);
+    parameter_reader->ReadParam(ParameterPath(kNodeParamMinLogVerbosityKey), specified_verbosity);
   switch (ret)
   {
-    case AwsError::AWS_ERR_NOT_FOUND:
+    case Aws::AwsError::AWS_ERR_NOT_FOUND:
       AWS_LOGSTREAM_WARN(__func__, "Log verbosity configuration not found, setting to default value: "
                                    << kNodeMinLogVerbosityDefaultValue);
       break;
-    case AwsError::AWS_ERR_OK:
+    case Aws::AwsError::AWS_ERR_OK:
       if ("DEBUG" == specified_verbosity) {
         min_log_verbosity = rosgraph_msgs::Log::DEBUG;
         AWS_LOG_INFO(__func__, "Log verbosity is set to DEBUG.");
@@ -180,7 +182,7 @@ Aws::AwsError ReadSubscriberList(
   std::vector<ros::Subscriber> & subscriptions)
 {
   std::vector<std::string> topics;
-  Aws::AwsError ret = parameter_reader->ReadList(kNodeParamLogTopicsListKey, topics);
+  Aws::AwsError ret = parameter_reader->ReadParam(ParameterPath(kNodeParamLogTopicsListKey), topics);
 
   for (const std::string& topic : topics)
   {
